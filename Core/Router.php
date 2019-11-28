@@ -1,5 +1,7 @@
 <?php
 
+namespace Core;
+
 class Router
 {
 
@@ -86,10 +88,13 @@ class Router
      */
     public function dispatch($url)
     {
+        $url = $this->removeQueryStringVariables($url);
+        
         if ($this->match($url))
         {
             $controller = $this->params['controller'];
             $controller = $this->capitalise($controller);
+            $controller = "App\Controllers\\$controller";
 
             if (class_exists($controller)) {
                 $controllerObject = new $controller();
@@ -127,6 +132,20 @@ class Router
     protected function camelCase($string)
     {
         return lcfirst($this->capitalise($string));
+    }
+
+    protected function removeQueryStringVariables($url)
+    {
+        if ($url != '') {
+            $parts = explode('&', $url, 2);
+    
+            if (strpos($parts[0], '=') === false) {
+                $url = $parts[0];
+            } else {
+                $url = '';
+            }
+        }
+        return $url;
     }
 
 }
