@@ -33,8 +33,7 @@ class Router
         $route = preg_replace('/\{([a-z]+)\}/', '(?P<\1>[a-z-]+)', $route);
 
         // Convert variables with custom regex
-        $route = preg_replace('/\{([a-z]+):([^\}]+)\]/', 
-        '(?P<\1>\2)', $route);
+        $route = preg_replace('/\{([a-z]+):([^\}]+)\}/', '(?P<\1>\2)', $route);
 
         // Add start and end delimiters
         $route = '/^' . $route . '$/i';
@@ -60,17 +59,19 @@ class Router
      */
     public function match($url)
     {
-        foreach($this->routes as $route => $params) {
+        foreach ($this->routes as $route => $params) {
             if (preg_match($route, $url, $matches)) {
-                foreach($matches as $key => $match) {
+                foreach ($matches as $key => $match) {
                     if (is_string($key)) {
                         $params[$key] = $match;
                     }
                 }
-            $this->params = $params;
-            return true;
+
+                $this->params = $params;
+                return true;
             }
         }
+
         return false;
     }
 
@@ -89,28 +90,29 @@ class Router
     public function dispatch($url)
     {
         $url = $this->removeQueryStringVariables($url);
-        
-        if ($this->match($url))
-        {
+
+        if ($this->match($url)) {
             $controller = $this->params['controller'];
             $controller = $this->capitalise($controller);
             $controller = "App\Controllers\\$controller";
 
             if (class_exists($controller)) {
-                $controllerObject = new $controller();
+                $controller_object = new $controller($this->params);
+
                 $action = $this->params['action'];
                 $action = $this->camelCase($action);
 
-                if (is_callable([$controllerObject, $action])) {
-                    $controllerObject->$action();
+                if (is_callable([$controller_object, $action])) {
+                    $controller_object->$action();
+
                 } else {
                     echo "The $action method in the $controller controller was not found";
                 }
             } else {
-                echo "The $controller controller was not found.";
+                echo "The $controller controller was not found";
             }
         } else {
-            echo "No route matched";
+            echo 'No route matched.';
         }
     }
 
@@ -138,13 +140,14 @@ class Router
     {
         if ($url != '') {
             $parts = explode('&', $url, 2);
-    
+
             if (strpos($parts[0], '=') === false) {
                 $url = $parts[0];
             } else {
                 $url = '';
             }
         }
+
         return $url;
     }
 

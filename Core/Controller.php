@@ -8,11 +8,11 @@ abstract class Controller
      * Params from the matched route
      * @var []
      */
-    protected $routeParams = [];
+    protected $route_params = [];
 
-    public function __construct($routeParams)
+    public function __construct($route_params)
     {
-        $this->routeParams = $routeParams;
+        $this->route_params = $route_params;
     }
 
 }
