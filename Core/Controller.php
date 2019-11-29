@@ -31,6 +31,7 @@ abstract class Controller
     protected function before()
     {
         echo "(before) ";
+        return false;
     }
 
     protected function after()

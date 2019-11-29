@@ -94,7 +94,7 @@ class Router
         if ($this->match($url)) {
             $controller = $this->params['controller'];
             $controller = $this->capitalise($controller);
-            $controller = "App\Controllers\\$controller";
+            $controller = $this->getNamespace() . $controller;
 
             if (class_exists($controller)) {
                 $controller_object = new $controller($this->params);
@@ -102,11 +102,10 @@ class Router
                 $action = $this->params['action'];
                 $action = $this->camelCase($action);
 
-                if (is_callable([$controller_object, $action])) {
+                if (preg_match('/action$/i', $action) == 0) {
                     $controller_object->$action();
-
                 } else {
-                    echo "The $action method in the $controller controller was not found";
+                    new \Exception("Method $action in controller $controller cannot be called directly - remove the Action suffix to call this method");
                 }
             } else {
                 echo "The $controller controller was not found";
@@ -150,9 +149,17 @@ class Router
 
         return $url;
     }
+    
+    protected function getNamespace()
+    {
+        $namespace = 'App\Controllers\\';
 
+        if (array_key_exists('namespace', $this->params)) {
+            $namespace .= $this->params['namespace'] . '\\';
+        }
+
+        return $namespace;
+    }
 }
 
-
-?>
 
